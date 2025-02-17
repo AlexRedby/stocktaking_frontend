@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from 'react';
+
 // import { Tree } from 'react-d3-tree';
 const Tree = dynamic(
     () => import('react-d3-tree'),
@@ -43,10 +45,32 @@ const Tree = dynamic(
 //   ],
 // };
 
-const data = await fetch('http://localhost:8080/barter-tree')
-const orgChart = await data.json()
+const renderRectSvgNode = ({ nodeDatum, toggleNode }) => (
+    <g>
+      <rect width="20" height="20" x="-10" onClick={toggleNode} />
+      <text fill="black" x="20">
+        {nodeDatum.name + " (" + nodeDatum.attributes?.count + ")"}
+      </text>
+    </g>
+  );
 
 export default function TreeComponent() {
+    const [orgChart, setOrgChart] = useState({});
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/barter-tree');
+                const data = await response.json();
+                setOrgChart(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+    
+        fetchData();
+    }, []);
+
     return (
     <div style={{ position: 'fixed', display: 'flex', width: '100%', height: '100%' }}>
         <Tree 
@@ -62,6 +86,7 @@ export default function TreeComponent() {
             initialDepth={1}
             depthFactor={0}
             hasInteractiveNodes={true}
+            renderCustomNodeElement={renderRectSvgNode}
         />
     </div>
     );
