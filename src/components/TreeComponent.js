@@ -76,14 +76,13 @@ export default function TreeComponent() {
         <Tree 
             data={orgChart}
             orientation='vertical'
-            zoomable={false}
+            zoomable={true}
             draggable={true}
             centeringTransitionDuration={800}
             translate={{ x: 700, y: 300 }}
             separation={{ siblings: 2, nonSiblings: 2 }}
             zoom={1}
             scaleExtent={{ min: 0.1, max: 1 }}
-            initialDepth={1}
             depthFactor={0}
             hasInteractiveNodes={true}
             renderCustomNodeElement={renderRectSvgNode}
