@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useState, useEffect } from 'react';
+import ELK from 'elkjs/lib/elk.bundled.js';
 import { stratify, tree } from 'd3-hierarchy';
 import dagre from '@dagrejs/dagre';
 import { 
@@ -11,6 +12,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow, 
+  MiniMap,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -86,6 +88,51 @@ const getDagreLayoutedElements = (nodes, edges, direction = 'TB') => {
   return { nodes: newNodes, edges };
 };
 
+const elk = new ELK();
+// Elk has a *huge* amount of options to configure. To see everything you can
+// tweak check out:
+//
+// - https://www.eclipse.org/elk/reference/algorithms.html
+// - https://www.eclipse.org/elk/reference/options.html
+const elkOptions = {
+  'elk.algorithm': 'layered',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+  'elk.spacing.nodeNode': '80',
+};
+const getElkLayoutedElements = (nodes, edges, options = {}) => {
+  const isHorizontal = options?.['elk.direction'] === 'RIGHT';
+  const graph = {
+    id: 'root',
+    layoutOptions: options,
+    children: nodes.map((node) => ({
+      ...node,
+      // Adjust the target and source handle positions based on the layout
+      // direction.
+      targetPosition: isHorizontal ? 'left' : 'top',
+      sourcePosition: isHorizontal ? 'right' : 'bottom',
+ 
+      // Hardcode a width and height for elk to use when layouting.
+      width: 150,
+      height: 50,
+    })),
+    edges: edges,
+  };
+ 
+  return elk
+    .layout(graph)
+    .then((layoutedGraph) => ({
+      nodes: layoutedGraph.children.map((node) => ({
+        ...node,
+        // React Flow expects a position property on the node instead of `x`
+        // and `y` fields.
+        position: { x: node.x, y: node.y },
+      })),
+ 
+      edges: layoutedGraph.edges,
+    }))
+    .catch(console.error);
+};
+
 const LayoutFlow = () => {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -112,14 +159,22 @@ const LayoutFlow = () => {
 
   const onLayout = useCallback(
     (direction) => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getD3LayoutedElements(nodes, edges);
+      // const { nodes: layoutedNodes, edges: layoutedEdges } = getDagreLayoutedElements(nodes, edges);
 
-      setNodes([...layoutedNodes]);
-      setEdges([...layoutedEdges]);
+      // setNodes([...layoutedNodes]);
+      // setEdges([...layoutedEdges]);
 
-      window.requestAnimationFrame(() => {
-        fitView();
-      });
+      // window.requestAnimationFrame(() => {
+      //   fitView();
+      // });
+      getElkLayoutedElements(nodes, edges, { 'elk.direction' : 'DOWN', ...elkOptions}).then(
+        ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+          setNodes(layoutedNodes);
+          setEdges(layoutedEdges);
+ 
+          window.requestAnimationFrame(() => fitView());
+        },
+      );
     },
     [nodes, edges],
   );
@@ -134,6 +189,7 @@ const LayoutFlow = () => {
       fitView
     >
       <Background />
+      <MiniMap />
 
       <Panel position="top-right">
         <button onClick={onLayout}>layout</button>
