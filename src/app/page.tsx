@@ -1,4 +1,3 @@
-import TreeComponent from '../components/TreeComponent';
 import GraphComponent from '../components/GraphComponent';
 
 
@@ -10,6 +9,5 @@ export default function Home() {
     <div style={{ width: '100vw', height: '100vh' }}>
       <GraphComponent />
     </div>
-    //<TreeComponent />
   );
 }
