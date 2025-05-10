@@ -153,7 +153,10 @@ const LayoutFlow = () => {
   useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await fetch('/api/crafting-tree');
+            console.log("Requesting tree for item", targetItem);
+            const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
+              target_item_id: targetItem?.id,
+            }).toString());
             const data = await response.json();
             const nodes = data.nodes.map((x) => {
               x.position = { x: 0, y: 0 }
@@ -167,7 +170,7 @@ const LayoutFlow = () => {
     };
 
     fetchData();
-  }, []);
+  }, [targetItem]);
 
   const onLayout = useCallback(
     (direction) => {
@@ -204,7 +207,7 @@ const LayoutFlow = () => {
         setLoading(true);
         
         try {
-          const response = await fetch('/api/items?' + new URLSearchParams({
+          const response = await fetch('/api/craftable-items?' + new URLSearchParams({
             filter: query,
           }).toString());
           const data = await response.json();
@@ -270,7 +273,7 @@ const LayoutFlow = () => {
             options={options}
             loading={loading}
             filterOptions={(x) => x}
-            onChange={(newValue) => setSelectedTargetItem(newValue)}
+            onChange={(_, newValue) => setSelectedTargetItem(newValue)}
             onInputChange={(_, newInputValue) => {
               setInputValue(newInputValue);
             }}
