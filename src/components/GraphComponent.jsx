@@ -1,5 +1,7 @@
 'use client';
 
+import './GraphComponent.css'
+import { debounce } from "lodash";
 import React, { useCallback, useState, useEffect } from 'react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { stratify, tree } from 'd3-hierarchy';
@@ -13,9 +15,18 @@ import {
   useEdgesState,
   useReactFlow, 
   MiniMap,
+  Controls,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
+
+import { 
+  Stack,
+  TextField, 
+  Button, 
+  Autocomplete, 
+  CircularProgress
+} from '@mui/material';
 
 const initialNodes = [
   { id: '1', position: { x: 200, y: 0 }, data: { label: '1' } },
@@ -137,6 +148,7 @@ const LayoutFlow = () => {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [targetItem, setSelectedTargetItem] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -179,6 +191,61 @@ const LayoutFlow = () => {
     [nodes, edges],
   );
 
+  const [inputValue, setInputValue] = useState('');
+  const [open, setOpen] = React.useState(false);
+  const [options, setOptions] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const debounceMs = 1000;
+
+  // Debounced function to fetch data
+  const debouncedFetchData = React.useMemo(
+    () => 
+      debounce(async (query) => {
+        setLoading(true);
+        
+        try {
+          const response = await fetch('/api/items?' + new URLSearchParams({
+            filter: query,
+          }).toString());
+          const data = await response.json();
+
+          setOptions(data);
+        } catch (error) {
+          console.error('Error fetching autocomplete options:', error);
+          setOptions([]);
+        } finally {
+          setLoading(false);
+        }
+      }, debounceMs),
+    [debounceMs]
+  );
+
+  // Fetch initial options when dropdown is opened
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    // Only fetch if no options loaded yet
+    if (options.length === 0 && !loading) {
+      debouncedFetchData(inputValue);
+    }
+  }, [open, options.length, loading, debouncedFetchData, inputValue]);
+
+  // Fetch options when input changes
+  useEffect(() => {
+    if (open) {
+      debouncedFetchData(inputValue);
+    }
+  }, [inputValue, open, debouncedFetchData]);
+
+  // Cleanup debounced function when component unmounts
+  useEffect(() => {
+    return () => {
+      debouncedFetchData.cancel();
+    };
+  }, [debouncedFetchData]);
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -191,8 +258,43 @@ const LayoutFlow = () => {
       <Background />
       <MiniMap />
 
-      <Panel position="top-right">
-        <button onClick={onLayout}>layout</button>
+      <Panel position="top-right" className="panel-with-background">
+        <Stack spacing={1}>
+          <Autocomplete
+            sx={{ width: 300 }}
+            open={open}
+            onOpen={() => setOpen(true)}
+            onClose={() => setOpen(false)}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            getOptionLabel={(option) => option.fullName}
+            options={options}
+            loading={loading}
+            filterOptions={(x) => x}
+            onChange={(newValue) => setSelectedTargetItem(newValue)}
+            onInputChange={(_, newInputValue) => {
+              setInputValue(newInputValue);
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Target item"
+                slotProps={{
+                  input: {
+                    ...params.InputProps,
+                    endAdornment: (
+                      <React.Fragment>
+                        {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </React.Fragment>
+                    ),
+                  },
+                }}
+              />
+            )}
+            />
+
+          <Button variant="outlined" onClick={onLayout}>Refresh</Button>
+        </Stack>
       </Panel>
     </ReactFlow>
   );
