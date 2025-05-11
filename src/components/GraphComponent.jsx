@@ -150,49 +150,67 @@ const LayoutFlow = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [targetItem, setSelectedTargetItem] = useState(null);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //       try {
+  //           console.log("Requesting tree for item", targetItem);
+  //           const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
+  //             target_item_id: targetItem?.id,
+  //           }).toString());
+  //           const data = await response.json();
+  //           const nodes = data.nodes.map((x) => {
+  //             x.position = { x: 0, y: 0 }
+  //             return x
+  //           })
+  //           setNodes(nodes);
+  //           setEdges(data.edges);
+  //       } catch (error) {
+  //           console.error('Error fetching data:', error);
+  //       }
+  //   };
+
+  //   fetchData();
+  // }, [targetItem]);
+
+  const onClick = () => {
     const fetchData = async () => {
-        try {
-            console.log("Requesting tree for item", targetItem);
-            const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
-              target_item_id: targetItem?.id,
-            }).toString());
-            const data = await response.json();
-            const nodes = data.nodes.map((x) => {
-              x.position = { x: 0, y: 0 }
-              return x
-            })
-            setNodes(nodes);
-            setEdges(data.edges);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
+      try {
+          console.log("Requesting tree for item", targetItem);
+          const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
+            target_item_id: targetItem?.id,
+          }).toString());
+          const data = await response.json();
+          const nodes = data.nodes.map((x) => {
+            x.position = { x: 0, y: 0 }
+            return x
+          });
+
+          getElkLayoutedElements(nodes, data.edges, { 'elk.direction' : 'DOWN', ...elkOptions}).then(
+            ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+              setNodes(layoutedNodes);
+              setEdges(layoutedEdges);
+      
+              window.requestAnimationFrame(() => fitView());
+            },
+          );
+
+          // setNodes(nodes);
+          // setEdges(data.edges);
+      } catch (error) {
+          console.error('Error fetching data:', error);
+      }
     };
 
     fetchData();
-  }, [targetItem]);
+    // const { nodes: layoutedNodes, edges: layoutedEdges } = getDagreLayoutedElements(nodes, edges);
 
-  const onLayout = useCallback(
-    (direction) => {
-      // const { nodes: layoutedNodes, edges: layoutedEdges } = getDagreLayoutedElements(nodes, edges);
+    // setNodes([...layoutedNodes]);
+    // setEdges([...layoutedEdges]);
 
-      // setNodes([...layoutedNodes]);
-      // setEdges([...layoutedEdges]);
-
-      // window.requestAnimationFrame(() => {
-      //   fitView();
-      // });
-      getElkLayoutedElements(nodes, edges, { 'elk.direction' : 'DOWN', ...elkOptions}).then(
-        ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
-          setNodes(layoutedNodes);
-          setEdges(layoutedEdges);
- 
-          window.requestAnimationFrame(() => fitView());
-        },
-      );
-    },
-    [nodes, edges],
-  );
+    // window.requestAnimationFrame(() => {
+    //   fitView();
+    // });
+  }
 
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = React.useState(false);
@@ -296,7 +314,7 @@ const LayoutFlow = () => {
             )}
             />
 
-          <Button variant="outlined" onClick={onLayout}>Refresh</Button>
+          <Button variant="outlined" onClick={onClick}>Refresh</Button>
         </Stack>
       </Panel>
     </ReactFlow>
