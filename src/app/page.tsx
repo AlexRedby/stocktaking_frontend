@@ -1,5 +1,9 @@
 'use client';
 
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from '@/lib/reactQueryClient';
+
 import GraphComponent from '@/components/GraphComponent';
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -13,11 +17,14 @@ const darkTheme = createTheme({
 
 export default function Home() {
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <div style={{ width: '100vw', height: '100vh' }}>
-        <GraphComponent />
-      </div>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <div style={{ width: '100vw', height: '100vh' }}>
+          <GraphComponent />
+        </div>
+      </ThemeProvider>
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+    </QueryClientProvider>
   );
 }

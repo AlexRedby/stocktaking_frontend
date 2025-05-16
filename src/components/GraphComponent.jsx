@@ -6,27 +6,29 @@ import React, { useCallback, useState, useEffect } from 'react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { stratify, tree } from 'd3-hierarchy';
 import dagre from '@dagrejs/dagre';
-import { 
+import {
   Background,
   ReactFlow,
   ReactFlowProvider,
   Panel,
   useNodesState,
   useEdgesState,
-  useReactFlow, 
+  useReactFlow,
   MiniMap,
   Controls,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
-import { 
+import {
   Stack,
-  TextField, 
-  Button, 
-  Autocomplete, 
+  TextField,
+  Button,
+  Autocomplete,
   CircularProgress
 } from '@mui/material';
+
+import { useCraftableItems } from '@/hooks/queries/useCraftableItems';
 
 const initialNodes = [
   { id: '1', position: { x: 200, y: 0 }, data: { label: '1' } },
@@ -68,17 +70,17 @@ const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 const getDagreLayoutedElements = (nodes, edges, direction = 'TB') => {
   const isHorizontal = direction === 'LR';
   dagreGraph.setGraph({ rankdir: direction });
- 
+
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
   });
- 
+
   edges.forEach((edge) => {
     dagreGraph.setEdge(edge.source, edge.target);
   });
- 
+
   dagre.layout(dagreGraph);
- 
+
   const newNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     const newNode = {
@@ -92,10 +94,10 @@ const getDagreLayoutedElements = (nodes, edges, direction = 'TB') => {
         y: nodeWithPosition.y - nodeHeight / 2,
       },
     };
- 
+
     return newNode;
   });
- 
+
   return { nodes: newNodes, edges };
 };
 
@@ -112,8 +114,8 @@ const elkOptions = {
   'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
   'elk.layered.wrapping.cutting.msd.freedom': 0,
 
-  'elk.overlapRemoval.maxIterations': 1000, 
-  'elk.overlapRemoval.runScanline': true, 
+  'elk.overlapRemoval.maxIterations': 1000,
+  'elk.overlapRemoval.runScanline': true,
 
   'elk.layered.thoroughness': 100,
 };
@@ -128,14 +130,14 @@ const getElkLayoutedElements = (nodes, edges, options = {}) => {
       // direction.
       targetPosition: isHorizontal ? 'left' : 'top',
       sourcePosition: isHorizontal ? 'right' : 'bottom',
- 
+
       // Hardcode a width and height for elk to use when layouting.
       width: 150,
       height: 50,
     })),
     edges: edges,
   };
- 
+
   return elk
     .layout(graph)
     .then((layoutedGraph) => ({
@@ -145,7 +147,7 @@ const getElkLayoutedElements = (nodes, edges, options = {}) => {
         // and `y` fields.
         position: { x: node.x, y: node.y },
       })),
- 
+
       edges: layoutedGraph.edges,
     }))
     .catch(console.error);
@@ -182,29 +184,29 @@ const LayoutFlow = () => {
   const onClick = () => {
     const fetchData = async () => {
       try {
-          console.log("Requesting tree for item", targetItem);
-          const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
-            target_item_id: targetItem?.id,
-          }).toString());
-          const data = await response.json();
-          const nodes = data.nodes.map((x) => {
-            x.position = { x: 0, y: 0 }
-            return x
-          });
+        console.log("Requesting tree for item", targetItem);
+        const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
+          target_item_id: targetItem?.id,
+        }).toString());
+        const data = await response.json();
+        const nodes = data.nodes.map((x) => {
+          x.position = { x: 0, y: 0 }
+          return x
+        });
 
-          getElkLayoutedElements(nodes, data.edges, { 'elk.direction' : 'DOWN', ...elkOptions}).then(
-            ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
-              setNodes(layoutedNodes);
-              setEdges(layoutedEdges);
-      
-              window.requestAnimationFrame(() => fitView());
-            },
-          );
+        getElkLayoutedElements(nodes, data.edges, { 'elk.direction': 'DOWN', ...elkOptions }).then(
+          ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+            setNodes(layoutedNodes);
+            setEdges(layoutedEdges);
 
-          // setNodes(nodes);
-          // setEdges(data.edges);
+            window.requestAnimationFrame(() => fitView());
+          },
+        );
+
+        // setNodes(nodes);
+        // setEdges(data.edges);
       } catch (error) {
-          console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
@@ -221,58 +223,64 @@ const LayoutFlow = () => {
 
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = React.useState(false);
-  const [options, setOptions] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const debounceMs = 1000;
 
-  // Debounced function to fetch data
-  const debouncedFetchData = React.useMemo(
-    () => 
-      debounce(async (query) => {
-        setLoading(true);
-        
-        try {
-          const response = await fetch('/api/craftable-items?' + new URLSearchParams({
-            filter: query,
-          }).toString());
-          const data = await response.json();
+  const { data, isLoading, error } = useCraftableItems(inputValue);
 
-          setOptions(data);
-        } catch (error) {
-          console.error('Error fetching autocomplete options:', error);
-          setOptions([]);
-        } finally {
-          setLoading(false);
-        }
-      }, debounceMs),
-    [debounceMs]
-  );
+  // useEffect(() => {
+  //   setOptions(items);
+  // }, [items]);
+  // Debounced function to fetch data
+  // const debouncedFetchData = React.useMemo(
+  //   () => 
+  //     debounce(async (query) => {
+  //       setLoading(true);
+
+  //       try {
+  //         const response = await fetch('/api/craftable-items?' + new URLSearchParams({
+  //           filter: query,
+  //         }).toString());
+  //         const data = await response.json();
+
+  //         setOptions(data);
+  //       } catch (error) {
+  //         console.error('Error fetching autocomplete options:', error);
+  //         setOptions([]);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     }, debounceMs),
+  //   [debounceMs]
+  // );
 
   // Fetch initial options when dropdown is opened
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!open) {
+  //     return;
+  //   }
 
-    // Only fetch if no options loaded yet
-    if (options.length === 0 && !loading) {
-      debouncedFetchData(inputValue);
-    }
-  }, [open, options.length, loading, debouncedFetchData, inputValue]);
+  //   // Only fetch if no options loaded yet
+  //   if (options.length === 0 && !loading) {
+  //     debouncedFetchData(inputValue);
+  //   }
+  // }, [open, options.length, loading, debouncedFetchData, inputValue]);
 
   // Fetch options when input changes
-  useEffect(() => {
-    if (open) {
-      debouncedFetchData(inputValue);
-    }
-  }, [inputValue, open, debouncedFetchData]);
+  // useEffect(() => {
+  //   if (open) {
+  //     debouncedFetchData(inputValue);
+  //   }
+  // }, [inputValue, open, debouncedFetchData]);
 
   // Cleanup debounced function when component unmounts
-  useEffect(() => {
-    return () => {
-      debouncedFetchData.cancel();
-    };
-  }, [debouncedFetchData]);
+  // useEffect(() => {
+  //   return () => {
+  //     debouncedFetchData.cancel();
+  //   };
+  // }, [debouncedFetchData]);
+
+  const options = data || [];
 
   return (
     <ReactFlow
@@ -319,7 +327,7 @@ const LayoutFlow = () => {
                 }}
               />
             )}
-            />
+          />
 
           <Button variant="outlined" onClick={onClick}>Refresh</Button>
         </Stack>
