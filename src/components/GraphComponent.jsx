@@ -107,8 +107,15 @@ const elk = new ELK();
 // - https://www.eclipse.org/elk/reference/options.html
 const elkOptions = {
   'elk.algorithm': 'layered',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '200',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
   'elk.spacing.nodeNode': '80',
+  'elk.layered.layering.strategy': 'NETWORK_SIMPLEX',
+  'elk.layered.wrapping.cutting.msd.freedom': 0,
+
+  'elk.overlapRemoval.maxIterations': 1000, 
+  'elk.overlapRemoval.runScanline': true, 
+
+  'elk.layered.thoroughness': 100,
 };
 const getElkLayoutedElements = (nodes, edges, options = {}) => {
   const isHorizontal = options?.['elk.direction'] === 'RIGHT';
