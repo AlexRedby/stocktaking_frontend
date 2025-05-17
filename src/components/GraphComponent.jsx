@@ -2,7 +2,7 @@
 
 import './GraphComponent.css'
 import { debounce } from "lodash";
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, use } from 'react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { stratify, tree } from 'd3-hierarchy';
 import dagre from '@dagrejs/dagre';
@@ -29,6 +29,7 @@ import {
 } from '@mui/material';
 
 import { useCraftableItems } from '@/hooks/queries/useCraftableItems';
+import { useCraftingTree } from '@/hooks/queries/useCraftingTree';
 
 const initialNodes = [
   { id: '1', position: { x: 200, y: 0 }, data: { label: '1' } },
@@ -181,104 +182,40 @@ const LayoutFlow = () => {
   //   fetchData();
   // }, [targetItem]);
 
+  const craftingTreeInfo = useCraftingTree(targetItem?.id, {enabled: false});
+  const graph = craftingTreeInfo.data;
+
+  useEffect(() => {
+    if (!graph) {
+      return;
+    }
+    
+    console.log("Requesting tree for item", targetItem);
+
+    const nodes = graph.nodes.map((x) => {
+      x.position = { x: 0, y: 0 }
+      return x
+    });
+
+    getElkLayoutedElements(nodes, graph.edges, { 'elk.direction': 'DOWN', ...elkOptions }).then(
+      ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+        setNodes(layoutedNodes);
+        setEdges(layoutedEdges);
+
+        window.requestAnimationFrame(() => fitView());
+      },
+    );
+  }, [graph]);
+
   const onClick = () => {
-    const fetchData = async () => {
-      try {
-        console.log("Requesting tree for item", targetItem);
-        const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
-          target_item_id: targetItem?.id,
-        }).toString());
-        const data = await response.json();
-        const nodes = data.nodes.map((x) => {
-          x.position = { x: 0, y: 0 }
-          return x
-        });
-
-        getElkLayoutedElements(nodes, data.edges, { 'elk.direction': 'DOWN', ...elkOptions }).then(
-          ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
-            setNodes(layoutedNodes);
-            setEdges(layoutedEdges);
-
-            window.requestAnimationFrame(() => fitView());
-          },
-        );
-
-        // setNodes(nodes);
-        // setEdges(data.edges);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-    // const { nodes: layoutedNodes, edges: layoutedEdges } = getDagreLayoutedElements(nodes, edges);
-
-    // setNodes([...layoutedNodes]);
-    // setEdges([...layoutedEdges]);
-
-    // window.requestAnimationFrame(() => {
-    //   fitView();
-    // });
+    craftingTreeInfo.refetch()
   }
 
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const debounceMs = 1000;
 
   const { data, isLoading, error } = useCraftableItems(inputValue);
-
-  // useEffect(() => {
-  //   setOptions(items);
-  // }, [items]);
-  // Debounced function to fetch data
-  // const debouncedFetchData = React.useMemo(
-  //   () => 
-  //     debounce(async (query) => {
-  //       setLoading(true);
-
-  //       try {
-  //         const response = await fetch('/api/craftable-items?' + new URLSearchParams({
-  //           filter: query,
-  //         }).toString());
-  //         const data = await response.json();
-
-  //         setOptions(data);
-  //       } catch (error) {
-  //         console.error('Error fetching autocomplete options:', error);
-  //         setOptions([]);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     }, debounceMs),
-  //   [debounceMs]
-  // );
-
-  // Fetch initial options when dropdown is opened
-  // useEffect(() => {
-  //   if (!open) {
-  //     return;
-  //   }
-
-  //   // Only fetch if no options loaded yet
-  //   if (options.length === 0 && !loading) {
-  //     debouncedFetchData(inputValue);
-  //   }
-  // }, [open, options.length, loading, debouncedFetchData, inputValue]);
-
-  // Fetch options when input changes
-  // useEffect(() => {
-  //   if (open) {
-  //     debouncedFetchData(inputValue);
-  //   }
-  // }, [inputValue, open, debouncedFetchData]);
-
-  // Cleanup debounced function when component unmounts
-  // useEffect(() => {
-  //   return () => {
-  //     debouncedFetchData.cancel();
-  //   };
-  // }, [debouncedFetchData]);
 
   const options = data || [];
 
