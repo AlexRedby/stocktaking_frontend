@@ -1,11 +1,9 @@
-'use client';
+import './App.css';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { queryClient } from '@/lib/reactQueryClient';
-
-import GraphComponent from '@/components/GraphComponent';
-
+import { queryClient } from './lib/reactQueryClient';
+import GraphComponent from './components/GraphComponent';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -15,9 +13,9 @@ const darkTheme = createTheme({
   },
 });
 
-export default function Home() {
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <div style={{ width: '100vw', height: '100vh' }}>
@@ -28,3 +26,5 @@ export default function Home() {
     </QueryClientProvider>
   );
 }
+
+export default App;
