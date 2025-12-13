@@ -1,4 +1,5 @@
 import './GraphComponent.css'
+import ItemNode from './ItemNode';
 import React, { useCallback, useState, useEffect, use } from 'react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import {
@@ -12,8 +13,6 @@ import {
   MiniMap,
   Controls,
 } from '@xyflow/react';
-
-import '@xyflow/react/dist/style.css';
 
 import {
   Stack,
@@ -57,8 +56,8 @@ const getElkLayoutedElements = (nodes, edges, options = {}) => {
       sourcePosition: isHorizontal ? 'right' : 'bottom',
 
       // Hardcode a width and height for elk to use when layouting.
-      width: 150,
-      height: 50,
+      width: 300, // 64 + 10 + 10 + 10 + text width 
+      height: 84, // 64 + 10 + 10
     })),
     edges: edges,
   };
@@ -117,6 +116,7 @@ const LayoutFlow = () => {
     console.log("Requesting tree for item", targetItem);
 
     const nodes = graph.nodes.map((x) => {
+      x.type = 'itemNode'
       x.position = { x: 0, y: 0 }
       return x
     });
@@ -149,6 +149,7 @@ const LayoutFlow = () => {
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      nodeTypes={{ itemNode: ItemNode }}
       colorMode="dark"
       fitView
     >

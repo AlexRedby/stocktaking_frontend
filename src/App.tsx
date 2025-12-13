@@ -1,4 +1,5 @@
 import './App.css';
+import '@xyflow/react/dist/style.css';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
