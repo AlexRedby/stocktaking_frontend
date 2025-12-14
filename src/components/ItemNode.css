@@ -1,8 +1,5 @@
 .react-flow__node-itemNode {
-  padding: 10px;
   border-radius: var(--xy-node-border-radius, var(--xy-node-border-radius-default));
-  width: 150px;
-  font-size: 12px;
   color: var(--xy-node-color, var(--xy-node-color-default));
   text-align: center;
   border: var(--xy-node-border, var(--xy-node-border-default));
@@ -22,6 +19,7 @@
 .node-content {
     display: flex;
     flex-direction: row;
+    margin: 10px 10px 0 10px;
 }
 
 .node-image {
@@ -46,4 +44,37 @@
 
 .node-short-name {
     font-size: 12px;
+}
+
+.node-stations {
+    display: flex;
+    flex-direction: row;
+    font-size: 10px;
+}
+
+.node-station {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-right: var(--xy-node-border, var(--xy-node-border-default));
+    border-top: var(--xy-node-border, var(--xy-node-border-default));
+    background-color: var(--xy-node-background-color, var(--xy-node-background-color-default));
+}
+
+.node-station:first-child {
+    border-end-start-radius: var(--xy-node-border-radius, var(--xy-node-border-radius-default));
+}
+
+.node-station:last-child {
+    border-right: none;
+    border-end-end-radius: var(--xy-node-border-radius, var(--xy-node-border-radius-default));
+}
+
+
+.node-station img {
+    width: 32px;
+    height: 32px;
+    margin: 0 5px 0 0;
 }

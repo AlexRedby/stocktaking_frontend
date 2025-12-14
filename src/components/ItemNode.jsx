@@ -10,7 +10,7 @@ export default memo(({ data }) => {
             <div className="node-content">
                 {data.image && (
                     <div className="node-image">
-                        <img src={data.image} alt={data.label || 'Node image'}/>
+                        <img src={data.image} alt={data.fullName || 'Node image'}/>
                     </div>
                 )}
 
@@ -28,6 +28,16 @@ export default memo(({ data }) => {
                     )}
                 </div>
             </div>
+            {data.stations && (
+                <div className="node-stations">
+                    {data.stations.map((station, i) => (
+                        <div className="node-station">
+                            <img src={station.image} alt={station.name || 'Station image'}/>
+                            {station.name} {station.level}
+                        </div>
+                    ))}
+                </div>
+            )}
             <Handle type="source" position={Position.Bottom} />
         </>
     );

@@ -56,8 +56,8 @@ const getElkLayoutedElements = (nodes, edges, options = {}) => {
       sourcePosition: isHorizontal ? 'right' : 'bottom',
 
       // Hardcode a width and height for elk to use when layouting.
-      width: 300, // 64 + 10 + 10 + 10 + text width 
-      height: 84, // 64 + 10 + 10
+      width: 450, // 64 + 10 + 10 + 10 + text width 
+      height: 126, // 64 + 10 + 10 + 32 + 2 * 5
     })),
     edges: edges,
   };
@@ -82,28 +82,6 @@ const LayoutFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [targetItem, setSelectedTargetItem] = useState(null);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //       try {
-  //           console.log("Requesting tree for item", targetItem);
-  //           const response = await fetch('/api/crafting-tree?' + new URLSearchParams({
-  //             target_item_id: targetItem?.id,
-  //           }).toString());
-  //           const data = await response.json();
-  //           const nodes = data.nodes.map((x) => {
-  //             x.position = { x: 0, y: 0 }
-  //             return x
-  //           })
-  //           setNodes(nodes);
-  //           setEdges(data.edges);
-  //       } catch (error) {
-  //           console.error('Error fetching data:', error);
-  //       }
-  //   };
-
-  //   fetchData();
-  // }, [targetItem]);
 
   const craftingTreeInfo = useCraftingTree(targetItem?.id, {enabled: false});
   const graph = craftingTreeInfo.data;
