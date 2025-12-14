@@ -34,11 +34,11 @@ export default memo(({ data }) => {
                         <div className="node-station">
                             <img src={station.image} alt={station.name || 'Station image'}/>
                             {station.name} {station.level}
+                            <Handle type="source" position={Position.Bottom} id={station.id} />
                         </div>
                     ))}
                 </div>
             )}
-            <Handle type="source" position={Position.Bottom} />
         </>
     );
 });

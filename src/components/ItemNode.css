@@ -72,9 +72,12 @@
     border-end-end-radius: var(--xy-node-border-radius, var(--xy-node-border-radius-default));
 }
 
-
 .node-station img {
     width: 32px;
     height: 32px;
     margin: 0 5px 0 0;
+}
+
+.react-flow__handle-bottom {
+    left: auto;
 }
