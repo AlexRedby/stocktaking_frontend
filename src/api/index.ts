@@ -1,6 +1,6 @@
-import { RequestParams } from './types';
+import { type RequestParams } from './types';
 
-export const API_BASE_URL = '';
+export const API_BASE_URL = '/api';
 
 export async function fetchJson<T>(
     url: string,

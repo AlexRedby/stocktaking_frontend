@@ -1,6 +1,6 @@
 import './GraphComponent.css'
 import ItemNode from './ItemNode';
-import React, { useCallback, useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import {
   Background,
@@ -10,8 +10,7 @@ import {
   useNodesState,
   useEdgesState,
   useReactFlow,
-  MiniMap,
-  Controls,
+  MiniMap
 } from '@xyflow/react';
 
 import {
@@ -22,8 +21,8 @@ import {
   CircularProgress
 } from '@mui/material';
 
-import { useCraftableItems } from 'hooks/queries/useCraftableItems';
-import { useCraftingTree } from 'hooks/queries/useCraftingTree';
+import { useCraftableItems } from '@/hooks/queries/useCraftableItems';
+import { useCraftingTree } from '@/hooks/queries/useCraftingTree';
 
 const elk = new ELK();
 // Elk has a *huge* amount of options to configure. To see everything you can

@@ -1,5 +1,5 @@
 import { fetchJson } from '../index';
-import { ReactFlowGraph } from '../types';
+import { type ReactFlowGraph } from '../types';
 
 export const treeApi = {
     getCraftingTree: (targetItemId?: string) => fetchJson<ReactFlowGraph>('/crafting-tree', {

@@ -1,5 +1,5 @@
 import { fetchJson } from '../index';
-import { CraftableItem } from '../types';
+import { type CraftableItem } from '../types';
 
 export const formApi = {
     getCraftableItems: (filter?: string) => fetchJson<CraftableItem[]>('/craftable-items', {

@@ -1,57 +1,20 @@
 {
-  "name": "stocktaking",
+  "name": "bun-react-template",
   "version": "0.1.0",
   "private": true,
-  "proxy":"http://localhost:8080",
-  "dependencies": {
-    "@emotion/styled": "^11.14.0",
-    "@fontsource/roboto": "^5.2.5",
-    "@mui/material": "^7.1.0",
-    "@tanstack/react-query": "^5.76.1",
-    "@tanstack/react-query-devtools": "^5.76.1",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.15.19",
-    "@types/react": "^19.1.4",
-    "@types/react-dom": "^19.1.5",
-    "@xyflow/react": "^12.6.4",
-    "elkjs": "^0.10.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^5.8.3",
-    "web-vitals": "^2.1.4"
-  },
-  "overrides": {
-    "typescript": "^5.8.3",
-    "nth-check": "^2.1.1",
-    "postcss": "^8.5.3"
-  },
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "bun --hot src/index.ts",
+    "build": "bun build ./src/index.html --outdir=dist --sourcemap --target=browser --minify --define:process.env.NODE_ENV='\"production\"' --env='BUN_PUBLIC_*'",
+    "start": "NODE_ENV=production bun src/index.ts"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "react": "^19",
+    "react-dom": "^19"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/bun": "latest"
   }
 }
