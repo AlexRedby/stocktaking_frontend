@@ -10,11 +10,21 @@ export interface ReactFlowNode {
 
 export interface ReactFlowNodeData {
     label: string;
+    fullName: string;
+    shortName: string;
+    image: string;
+    stations: Array<{
+        id: string;
+        name: string;
+        level: number;
+        image: string;
+    }>;
 }
 
 export interface ReactFlowEdge {
     id: string;
     source: string;
+    sourceHandle: string;
     target: string;
 }
 

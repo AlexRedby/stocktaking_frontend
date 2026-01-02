@@ -1,9 +1,12 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import type { ReactFlowNodeData } from '@/api/types';
 
 import './ItemNode.css';
 
-export default memo(({ data }) => {
+export default memo((props: { data: ReactFlowNodeData }) => {
+    const data = props.data;
+    console.log(props)
     return (
         <>
             <Handle type="target" position={Position.Top} />
@@ -30,8 +33,8 @@ export default memo(({ data }) => {
             </div>
             {data.stations && (
                 <div className="node-stations">
-                    {data.stations.map((station, i) => (
-                        <div className="node-station">
+                    {data.stations.map((station) => (
+                        <div key={station.id} className="node-station">
                             <img src={station.image} alt={station.name || 'Station image'}/>
                             {station.name} {station.level}
                             <Handle type="source" position={Position.Bottom} id={station.id} />
