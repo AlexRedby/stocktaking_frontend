@@ -6,7 +6,6 @@ import './ItemNode.css';
 
 export default memo((props: { data: ApiNodeData }) => {
     const data = props.data;
-    console.log(props)
     return (
         <>
             <Handle type="target" position={Position.Top} />
@@ -37,7 +36,7 @@ export default memo((props: { data: ApiNodeData }) => {
                         <div key={station.id} className="node-station">
                             <img src={station.image} alt={station.name || 'Station image'}/>
                             {station.name} {station.level}
-                            <Handle type="source" position={Position.Bottom} id={station.id} />
+                            <Handle type="source" position={Position.Bottom} id={station.id} className='center-handle' />
                         </div>
                     ))}
                 </div>
