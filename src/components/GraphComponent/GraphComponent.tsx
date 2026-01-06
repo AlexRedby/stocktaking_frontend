@@ -1,5 +1,5 @@
 import './GraphComponent.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Background,
   ReactFlow,
@@ -11,6 +11,7 @@ import {
   MiniMap,
   type Node,
   type Edge,
+  Position,
 } from '@xyflow/react';
 import {
   Stack,
@@ -18,13 +19,16 @@ import {
   Button,
   Autocomplete,
   CircularProgress,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 
 import ItemNode from '../nodes/ItemNode';
 import { useCraftableItems } from '@/hooks/queries/useCraftableItems';
 import { useCraftingTree } from '@/hooks/queries/useCraftingTree';
 import type { CraftableItem } from '@/api/types';
-import { getElkLayoutedElements, createDownwardLayoutOptions } from './layout';
+import { getElkLayoutedElements } from './layout';
+import { ELK_OPTIONS } from './constants';
 
 /**
  * Main layout component that handles the graph visualization
@@ -36,6 +40,7 @@ const LayoutFlow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [targetItem, setSelectedTargetItem] = useState<CraftableItem | null>(null);
+  const [direction, setDirection] = useState<Position>(Position.Bottom);
 
   // Autocomplete state
   const [inputValue, setInputValue] = useState('');
@@ -48,23 +53,62 @@ const LayoutFlow = () => {
 
   const graph = craftingTreeInfo.data;
   const autocompleteOptions = craftableItems || [];
+  const dataUpdatedAt = craftingTreeInfo.dataUpdatedAt;
 
-  // Layout the graph when data changes
+  // Debounced fitView to prevent excessive calls
+  const fitViewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const debouncedFitView = useCallback(() => {
+    if (fitViewTimeoutRef.current) {
+      clearTimeout(fitViewTimeoutRef.current);
+    }
+    
+    fitViewTimeoutRef.current = setTimeout(() => {
+      window.requestAnimationFrame(() => fitView());
+    }, 100);
+  }, [fitView]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fitViewTimeoutRef.current) {
+        clearTimeout(fitViewTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Layout the graph when data changes or direction changes
   useEffect(() => {
     if (!graph) return;
     
-    console.log('Requesting tree for item', targetItem);
+    console.log('Requesting tree for item', targetItem, 'with direction', direction);
 
-    const layoutOptions = createDownwardLayoutOptions();
+    // Convert Position enum to ELK direction
+    const elkDirection =
+      direction === Position.Top ? 'UP' :
+      direction === Position.Bottom ? 'DOWN' :
+      direction === Position.Left ? 'LEFT' :
+      'RIGHT';
+
+    const layoutOptions = {
+      'elk.direction': elkDirection,
+      ...ELK_OPTIONS,
+    };
 
     getElkLayoutedElements(graph, layoutOptions)
       .then(({ nodes: layoutedNodes, edges: layoutedEdges }) => {
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
-        window.requestAnimationFrame(() => fitView());
+        debouncedFitView();
       })
       .catch(console.error);
-  }, [graph, fitView, setNodes, setEdges, targetItem]);
+  }, [graph, direction, debouncedFitView, setNodes, setEdges, targetItem, dataUpdatedAt]);
+
+  const handleDirectionChange = (_: React.MouseEvent<HTMLElement>, newDirection: Position | null) => {
+    if (newDirection !== null) {
+      setDirection(newDirection);
+    }
+  };
 
   const handleRefresh = () => {
     craftingTreeInfo.refetch();
@@ -117,6 +161,28 @@ const LayoutFlow = () => {
               />
             )}
           />
+
+          <ToggleButtonGroup
+            value={direction}
+            exclusive
+            onChange={handleDirectionChange}
+            aria-label="graph direction"
+            size="small"
+            fullWidth
+          >
+            <ToggleButton value={Position.Top} aria-label="up">
+              ↑ Up
+            </ToggleButton>
+            <ToggleButton value={Position.Bottom} aria-label="down">
+              ↓ Down
+            </ToggleButton>
+            <ToggleButton value={Position.Left} aria-label="left">
+              ← Left
+            </ToggleButton>
+            <ToggleButton value={Position.Right} aria-label="right">
+              → Right
+            </ToggleButton>
+          </ToggleButtonGroup>
 
           <Button variant="outlined" onClick={handleRefresh}>
             Refresh

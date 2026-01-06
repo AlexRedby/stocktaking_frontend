@@ -24,10 +24,11 @@ const elk = new ELK();
  * @returns Promise resolving to ReactFlow-compatible graph structure
  */
 export const getElkLayoutedElements = (
-  graph: ApiGraph, 
+  graph: ApiGraph,
   options: LayoutOptions = {}
 ): Promise<ReactFlowGraph> => {
-  const isHorizontal = options?.['elk.direction'] === 'RIGHT';
+  const direction = options?.['elk.direction'];
+  const isHorizontal = direction === 'RIGHT' || direction === 'LEFT';
 
   const elkGraph: ExtendedElkNode = {
     id: 'root',
@@ -43,13 +44,3 @@ export const getElkLayoutedElements = (
       edges: convertToReactFlowEdges(graph.edges),
     }));
 };
-
-/**
- * Creates layout options for downward (vertical) graph layout
- * 
- * @returns Layout options configured for vertical layout
- */
-export const createDownwardLayoutOptions = (): LayoutOptions => ({
-  'elk.direction': 'DOWN',
-  ...ELK_OPTIONS,
-});
