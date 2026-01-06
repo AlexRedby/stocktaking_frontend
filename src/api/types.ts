@@ -1,14 +1,14 @@
-export interface ReactFlowGraph {
-    nodes: ReactFlowNode[];
-    edges: ReactFlowEdge[];
+export interface ApiGraph {
+    nodes: ApiGraphNode[];
+    edges: ApiGraphEdge[];
 }
 
-export interface ReactFlowNode {
+export interface ApiGraphNode {
     id: string;
-    data: ReactFlowNodeData;
+    data: ApiNodeData;
 }
 
-export interface ReactFlowNodeData {
+export interface ApiNodeData extends Record<string, unknown> {
     label: string;
     fullName: string;
     shortName: string;
@@ -21,7 +21,7 @@ export interface ReactFlowNodeData {
     }>;
 }
 
-export interface ReactFlowEdge {
+export interface ApiGraphEdge {
     id: string;
     source: string;
     sourceHandle: string;

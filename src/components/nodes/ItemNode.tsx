@@ -1,10 +1,10 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import type { ReactFlowNodeData } from '@/api/types';
+import type { ApiNodeData } from '@/api/types';
 
 import './ItemNode.css';
 
-export default memo((props: { data: ReactFlowNodeData }) => {
+export default memo((props: { data: ApiNodeData }) => {
     const data = props.data;
     console.log(props)
     return (
